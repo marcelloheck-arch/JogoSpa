@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quiz - Língua Portuguesa</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: linear-gradient(135deg, #74ebd5, #9face6);
+      margin: 0;
+      padding: 0;
+    }
+    #quiz-container {
+      max-width: 800px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      animation: fadeIn 1s;
+    }
+    h1 { color: #333; }
+    #question { font-size: 20px; margin-bottom: 20px; }
+    .answer-btn {
+      display: block;
+      width: 100%;
+      margin: 8px 0;
+      padding: 12px;
+      background: #f0f0f0;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .answer-btn:hover { background: #dfe9f3; transform: scale(1.02); }
+    #next-btn {
+      margin-top: 20px;
+      padding: 12px 24px;
+      background: #4cafef;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      display: none;
+    }
+    #score-container {
+      display: none;
+      animation: fadeIn 1s;
+    }
+    #progress-bar {
+      height: 20px;
+      background: #eee;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    #progress { height: 100%; width: 0%; background: linear-gradient(90deg,#4caf50,#8bc34a); }
+    #timer { font-weight: bold; margin-bottom: 15px; color: #d32f2f; }
+    @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+  </style>
+</head>
+<body>
+  <div id="quiz-container">
+    <h1>Quiz de Língua Portuguesa</h1>
+    <div id="progress-bar"><div id="progress"></div></div>
+    <div id="timer">Tempo: 15s</div>
+    <div id="question"></div>
+    <div id="answers"></div>
+    <button id="next-btn">Próxima</button>
+    <div id="score-container">
+      <h2>Resultado Final</h2>
+      <p id="score"></p>
+      <p id="medal"></p>
+      <canvas id="confettiCanvas"></canvas>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      // 1–10 Interpretação
+      {question:"O objetivo principal da interpretação de texto é:",answers:["Decorar o texto","Entender o sentido e intenção do autor","Identificar todas as palavras difíceis","Copiar frases do texto"],correct:1},
+      {question:"No texto 'A vida é bela, embora difícil', a conjunção 'embora' indica:",answers:["Explicação","Concessão","Causa","Adição"],correct:1},
+      {question:"Interpretar um texto significa:",answers:["Reescrever com outras palavras","Atribuir sentido às ideias apresentadas","Traduzir para outro idioma","Identificar apenas as palavras-chave"],correct:1},
+      {question:"A função predominante da linguagem em textos literários é:",answers:["Referencial","Conativa","Metalinguística","Poética"],correct:3},
+      {question:"Em uma notícia jornalística, a função da linguagem predominante é:",answers:["Fática","Referencial","Poética","Metalinguística"],correct:1},
+      {question:"No texto 'Se correr, o bicho pega; se ficar, o bicho come', há exemplo de:",answers:["Paradoxo","Pleonasmo","Aliteração","Prosopopeia"],correct:0},
+      {question:"O enredo de um conto é:",answers:["A opinião do autor","A sequência de fatos da narrativa","A moral da história","Um diálogo entre personagens"],correct:1},
+      {question:"A moral é característica típica de:",answers:["Contos","Romances","Fábulas","Crônicas"],correct:2},
+      {question:"Em uma crônica, geralmente encontramos:",answers:["Temas cotidianos","Personagens mitológicos","Regras gramaticais","Argumentos jurídicos"],correct:0},
+      {question:"O leitor que busca identificar a tese de um texto está procurando:",answers:["Um exemplo","O argumento principal","Uma metáfora","Um resumo"],correct:1},
+
+      // 11–20 Ortografia
+      {question:"Qual a forma correta segundo o Acordo Ortográfico?",answers:["Anticoncepcional","Anti-concepcional","Anti concepcional","Anti-concepcíonál"],correct:0},
+      {question:"A palavra correta é:",answers:["Excessão","Exceção","Execessão","Exceçãoo"],correct:1},
+      {question:"Assinale a palavra com uso correto do hífen:",answers:["Micro-ônibus","Auto-escola","Semi-deus","Re-eleição"],correct:0},
+      {question:"A forma correta é:",answers:["Beneficiente","Beneficente","Beneficientee","Benificente"],correct:1},
+      {question:"Segundo a regra de acentuação, 'heroi' no plural é:",answers:["Herois","Heróis","Heróes","Heróis"],correct:1},
+      {question:"Homônimos perfeitos são palavras que:",answers:["Possuem mesma grafia e pronúncia, mas sentidos diferentes","São iguais na pronúncia, mas diferentes na escrita","São diferentes na grafia, mas mesmo significado","Não existem"],correct:0},
+      {question:"Assinale a alternativa com parônimos:",answers:["Acender/Ascender","Mau/Mal","Sessão/Seção","Todos"],correct:3},
+      {question:"A forma correta é:",answers:["Excessivo","Escessivo","Exscessivo","Excesivo"],correct:0},
+      {question:"Segundo a norma culta, escreve-se:",answers:["Mecher","Mexer","Mexeir","Mecher"],correct:1},
+      {question:"A palavra com acento segundo as regras é:",answers:["Ideia","Heroi","Jibóia","Feiura"],correct:2},
+
+      // 21–30 Concordância, regência e crase
+      {question:"Assinale a frase correta quanto à concordância verbal:",answers:["Houveram muitos problemas","Fazem dois anos que viajei","Houve muitas reclamações","Devem haver soluções"],correct:2},
+      {question:"A frase correta é:",answers:["Assistiu o filme","Assistiu ao filme","Assistiu no filme","Assistiu um filme"],correct:1},
+      {question:"O uso da crase está correto em:",answers:["Vou à escola","Cheguei à tarde","Assisti à peça","Todas"],correct:3},
+      {question:"Concordância correta:",answers:["Mais de um aluno chegaram","Mais de um aluno chegou","Mais de um alunos chegaram","Mais de um aluno tinha chegado"],correct:1},
+      {question:"Concordância correta:",answers:["Existem muitas pessoas","Existe muitas pessoas","Existem muita pessoa","Existia muitas pessoas"],correct:0},
+      {question:"Regência correta:",answers:["Simpatizo com ele","Simpatizo ele","Simpatizo-a","Simpatizo por ele"],correct:0},
+      {question:"Crase correta:",answers:["Referi-me à aluna","Referi-me a aluna","Referi-me à o aluno","Referi-me ao aluna"],correct:0},
+      {question:"Concordância correta:",answers:["Anexei as provas ao processo","Anexei ao processo as provas","Ambas corretas","Nenhuma"],correct:2},
+      {question:"O certo é:",answers:["Prefiro estudar do que trabalhar","Prefiro estudar a trabalhar","Prefiro estudar que trabalhar","Prefiro estudar do trabalhar"],correct:1},
+      {question:"Uso da crase correto:",answers:["Vou à Bahia","Vou a Roma","Vou à pé","Vou a casa de Maria"],correct:0},
+
+      // 31–40 Classes de palavras e análise sintática
+      {question:"Na frase 'O livro é interessante', a palavra 'livro' é:",answers:["Substantivo","Adjetivo","Verbo","Pronome"],correct:0},
+      {question:"O termo que substitui o substantivo é:",answers:["Verbo","Pronome","Advérbio","Artigo"],correct:1},
+      {question:"Na frase 'Eles estudam muito', 'muito' é:",answers:["Substantivo","Adjetivo","Advérbio","Pronome"],correct:2},
+      {question:"Em 'casa bonita', 'bonita' é:",answers:["Substantivo","Adjetivo","Pronome","Conjunção"],correct:1},
+      {question:"Na frase 'Corremos rapidamente', 'rapidamente' é:",answers:["Adjetivo","Substantivo","Advérbio","Pronome"],correct:2},
+      {question:"O plural de 'cidadão' é:",answers:["Cidadões","Cidadãos","Cidões","Cidães"],correct:1},
+      {question:"Na frase 'Ele a viu', o 'a' funciona como:",answers:["Artigo","Pronome pessoal","Preposição","Advérbio"],correct:1},
+      {question:"Na frase 'Maria gosta de chocolate', 'de chocolate' é:",answers:["Objeto direto","Objeto indireto","Adjunto adnominal","Aposto"],correct:1},
+      {question:"Em 'O aluno estuda porque quer passar', 'porque' é:",answers:["Conjunção causal","Conjunção final","Conjunção consecutiva","Advérbio"],correct:0},
+      {question:"Em 'Comprou um carro novo', 'novo' é:",answers:["Verbo","Adjetivo","Pronome","Substantivo"],correct:1},
+
+      // 41–50 Pontuação e figuras de linguagem
+      {question:"O uso da vírgula está correto em:",answers:["Pedro, chegou cedo.","Ontem, saí cedo.","Vou, amanhã trabalhar.","Maria gosta, de estudar."],correct:1},
+      {question:"A figura de linguagem em 'O sol sorria no horizonte' é:",answers:["Metáfora","Personificação","Hipérbole","Antítese"],correct:1},
+      {question:"Em 'Estou morto de fome', ocorre:",answers:["Hipérbole","Metáfora","Eufemismo","Ironia"],correct:0},
+      {question:"Em 'Ele é pobre, mas feliz', a conjunção 'mas' indica:",answers:["Adição","Explicação","Concessão","Oposição"],correct:3},
+      {question:"Em 'Carlos ou Pedro resolverá a questão', o verbo deve ficar no:",answers:["Singular","Plural","Ambos corretos","Nenhum"],correct:0},
+      {question:"O ponto e vírgula é usado para:",answers:["Separar orações independentes longas","Indicar dúvida","Finalizar período","Substituir reticências"],correct:0},
+      {question:"A figura em 'Ela chorou rios de lágrimas' é:",answers:["Hipérbole","Metonímia","Antítese","Ironia"],correct:0},
+      {question:"A palavra 'mas' pode ser substituída por:",answers:["Porém","Portanto","Logo","Pois"],correct:0},
+      {question:"A vírgula é usada para:",answers:["Separar vocativo","Marcar sujeito do predicado","Separar verbo do objeto","Separar núcleo do sujeito"],correct:0},
+      {question:"Em 'A vida é luta constante', 'luta constante' exerce função de:",answers:["Sujeito","Objeto direto","Predicativo","Adjunto adverbial"],correct:2}
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let timeLeft = 15;
+    let timer;
+
+    const questionEl = document.getElementById("question");
+    const answersEl = document.getElementById("answers");
+    const nextBtn = document.getElementById("next-btn");
+    const scoreContainer = document.getElementById("score-container");
+    const scoreEl = document.getElementById("score");
+    const medalEl = document.getElementById("medal");
+    const progressEl = document.getElementById("progress");
+    const timerEl = document.getElementById("timer");
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    shuffle(questions);
+
+    function showQuestion() {
+      resetState();
+      const q = questions[currentQuestionIndex];
+      questionEl.textContent = q.question;
+      q.answers.forEach((answer, index) => {
+        const btn = document.createElement("button");
+        btn.textContent = answer;
+        btn.classList.add("answer-btn");
+        btn.addEventListener("click", () => selectAnswer(index));
+        answersEl.appendChild(btn);
+      });
+      startTimer();
+    }
+
+    function resetState() {
+      clearInterval(timer);
+      timeLeft = 15;
+      timerEl.textContent = "Tempo: 15s";
+      nextBtn.style.display = "none";
+      answersEl.innerHTML = "";
+    }
+
+    function startTimer() {
+      timer = setInterval(() => {
+        timeLeft--;
+        timerEl.textContent = "Tempo: " + timeLeft + "s";
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          selectAnswer(-1);
+        }
+      }, 1000);
+    }
+
+    function selectAnswer(index) {
+      clearInterval(timer);
+      const q = questions[currentQuestionIndex];
+      const buttons = answersEl.querySelectorAll("button");
+      buttons.forEach((btn, i) => {
+        if (i === q.correct) {
+          btn.style.background = "#4caf50";
+          btn.style.color = "white";
+        }
+        if (i === index && i !== q.correct) {
+          btn.style.background = "#f44336";
+          btn.style.color = "white";
+        }
+        btn.disabled = true;
+      });
+      if (index === q.correct) score++;
+      nextBtn.style.display = "inline-block";
+    }
+
+    nextBtn.addEventListener("click", () => {
+      currentQuestionIndex++;
+      progressEl.style.width = (currentQuestionIndex / questions.length) * 100 + "%";
+      if (currentQuestionIndex < questions.length) {
+        showQuestion();
+      } else {
+        endQuiz();
+      }
+    });
+
+    function endQuiz() {
+      document.getElementById("question").style.display = "none";
+      document.getElementById("answers").style.display = "none";
+      document.getElementById("timer").style.display = "none";
+      nextBtn.style.display = "none";
+      scoreContainer.style.display = "block";
+      scoreEl.textContent = `Você acertou ${score} de ${questions.length} questões!`;
+      if (score >= 40) {
+        medalEl.textContent = "🥇 Ouro - Excelente!";
+      } else if (score >= 30) {
+        medalEl.textContent = "🥈 Prata - Muito bom!";
+      } else if (score >= 20) {
+        medalEl.textContent = "🥉 Bronze - Bom esforço!";
+      } else {
+        medalEl.textContent = "🎖️ Continue praticando!";
+      }
+    }
+
+    showQuestion();
+  </script>
+</body>
+</html>
